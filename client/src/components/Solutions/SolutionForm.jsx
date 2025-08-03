@@ -1,24 +1,48 @@
 import { useState } from 'react';
 import API from '../../utils/api';
 
-function SolutionForm({ problemId }) {
-  const [desc, setDesc] = useState('');
+function SolutionForm({ problemId, onNewSolution }) {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      await API.post(`/solutions/${problemId}`, { description: desc });
-      alert('Solution submitted!');
-      setDesc('');
+      const res = await API.post(`/solutions/${problemId}`, { text });
+      setText('');
+      if (onNewSolution) {
+        onNewSolution(res.data); // ✅ this works now
+      }
     } catch (err) {
-      alert(err.response?.data?.message || 'Error submitting');
+      setError('Failed to submit solution.');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <textarea className="w-full border p-2" rows="4" value={desc} onChange={(e) => setDesc(e.target.value)} />
-      <button type="submit" className="btn-primary mt-2">Submit Solution</button>
+    <form onSubmit={submitHandler} className="mb-6">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full p-2 border rounded bg-gray-800 text-white"
+        rows="4"
+        placeholder="Write your solution here..."
+        required
+      />
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      <button
+        type="submit"
+        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        disabled={loading}
+      >
+        {loading ? 'Submitting...' : 'Submit Solution'}
+      </button>
     </form>
   );
 }

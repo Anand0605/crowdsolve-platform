@@ -1,43 +1,53 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import API from '../utils/api';
+import ProblemCard from '../components/Problems/ProblemCard';
+import ProblemForm from '../components/Problems/ProblemForm';
 
-function ProblemDetails() {
-  const { problemId } = useParams();
-  const [solutions, setSolutions] = useState([]);
+function Home() {
+  const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    API.get(`/problems/${problemId}/solutions`)
-      .then(res => {
-        console.log('Solutions:', res.data);
-        setSolutions(res.data || []);
-      })
-      .catch(err => {
-        console.error(err);
-      })
-      .finally(() => setLoading(false));
-  }, [problemId]);
+    fetchProblems();
+  }, []);
 
-  if (loading) return <p>Loading solutions...</p>;
+  const fetchProblems = async () => {
+    try {
+      const res = await API.get('/problems');
+      setProblems(res.data);
+    } catch (err) {
+      console.error('Error fetching problems:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewProblem = (newProblem) => {
+    setProblems(prev => [newProblem, ...prev]); // Add new at top
+  };
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white">
-      <h1 className="text-2xl font-bold mb-4">Problem Solutions</h1>
+    <div className="p-6 min-h-screen bg-gray-900 text-white">
+      <h1 className="text-3xl font-bold mb-6">CrowdSolve Platform</h1>
 
-      {solutions.length === 0 ? (
-        <p>No solutions found.</p>
+      {/* Problem submission form */}
+      <ProblemForm onProblemPosted={handleNewProblem} />
+
+      <h2 className="text-2xl font-semibold mb-4">All Problems</h2>
+
+      {loading ? (
+        <p>Loading problems...</p>
+      ) : problems.length === 0 ? (
+        <p>No problems found.</p>
       ) : (
-        <ul>
-          {solutions.map((solution) => (
-            <li key={solution._id} className="mb-4 p-4 bg-gray-800 rounded">
-              <p>{solution.text}</p>
-            </li>
+        <div className="space-y-4">
+          {problems.map((problem) => (
+            <ProblemCard key={problem._id} problem={problem} />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
 }
 
-export default ProblemDetails;
+export default Home;
