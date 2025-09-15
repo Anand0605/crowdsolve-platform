@@ -47,12 +47,14 @@ const commentOnSolution = async (req, res) => {
 
 const getSolutionsForProblem = async (req, res) => {
   try {
-    const solutions = await Solution.find({ problem: req.params.problemId });
+    const solutions = await Solution.find({ problem: req.params.problemId })
+      .populate('user', 'username'); // ✅ This line is the fix
     res.json(solutions);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 module.exports = {
   createSolution,
