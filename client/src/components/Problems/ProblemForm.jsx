@@ -14,14 +14,22 @@ function ProblemForm({ onSuccess }) {
     try {
       const res = await API.post('/problems', form); // ✅ Use API instead of axios
       console.log('Problem submitted:', res.data);
-      onSuccess?.(); // refresh list if callback passed
+
+      // ✅ Reset form after successful submit
+      setForm({ title: '', description: '' });
+
+      // ✅ Call success callback (if provided)
+      onSuccess?.();
     } catch (err) {
       console.error('Problem submission failed:', err);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-gray-800 p-4 rounded text-white">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 bg-gray-800 p-4 rounded text-white"
+    >
       <input
         type="text"
         name="title"
@@ -37,7 +45,12 @@ function ProblemForm({ onSuccess }) {
         onChange={handleChange}
         className="w-full p-2 rounded bg-gray-700"
       />
-      <button type="submit" className="bg-blue-600 px-4 py-2 rounded">Submit</button>
+      <button
+        type="submit"
+        className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+      >
+        Submit
+      </button>
     </form>
   );
 }
